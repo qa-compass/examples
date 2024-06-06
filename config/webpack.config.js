@@ -27,6 +27,7 @@ const ForkTsCheckerWebpackPlugin =
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 const createEnvironmentHash = require('./webpack/persistentCache/createEnvironmentHash');
+const {execSync} = require("child_process");
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
@@ -229,6 +230,13 @@ module.exports = function (webpackEnv) {
         : isEnvDevelopment &&
           (info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
     },
+    // When you start your app with "npm start" on localhost, the Code Jump feature gets the branch once from this line:
+    // "branch: execSync("git rev-parse --abbrev-ref HEAD").toString().trimEnd()".
+    // If you run npm start and then switch branches, it will still jump to the initial branch.
+    // To fix this you have two options:
+    // 1) manually run "rm -rf node_modules/.cache" after every branch change
+    // 2) Set "cache: false" below
+    // Then you can restart "npm start" to jump to the current branch.
     cache: {
       type: 'filesystem',
       version: createEnvironmentHash(env.raw),
@@ -560,6 +568,23 @@ module.exports = function (webpackEnv) {
             // Make sure to add the new loader(s) before the "file" loader.
           ],
         },
+        // Place the loader last, which will make it the first loader being run. It needs to run before other loaders transpile jsx.
+        {
+          test: /\.(js|ts|jsx|tsx)$/,
+          use: [
+            {
+              loader: '@qa-compass/code-jump-webpack-react',
+              options: {
+                service: "github",
+                repoUrl: execSync("git remote get-url origin").toString().trimEnd(),
+                localRepoPath: process.env.PWD,
+                branch: execSync("git rev-parse --abbrev-ref HEAD").toString().trimEnd(),
+                commit: execSync("git rev-parse HEAD").toString().trimEnd(),
+              }
+            }
+          ],
+          exclude: /node_modules/,
+        }
       ].filter(Boolean),
     },
     plugins: [

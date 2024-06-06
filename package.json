@@ -135,5 +135,8 @@
     "presets": [
       "react-app"
     ]
+  },
+  "devDependencies": {
+    "@qa-compass/code-jump-webpack-react": "^1.0.0"
   }
 }

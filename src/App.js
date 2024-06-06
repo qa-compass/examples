@@ -18,6 +18,7 @@ function App() {
           Learn React
         </a>
       </header>
+      <template data-qa-compass-template=""></template>
     </div>
   );
 }
