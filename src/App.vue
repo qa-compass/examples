@@ -15,6 +15,7 @@ import TheWelcome from './components/TheWelcome.vue'
   <main>
     <TheWelcome />
   </main>
+  <template data-qa-compass-template=""></template>
 </template>
 
 <style scoped>
